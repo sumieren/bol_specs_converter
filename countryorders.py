@@ -32,8 +32,8 @@ class CountryOrders:
     def as_dataframe(self):
         dictionary = {
             "product number": [],
-            "product title": [],
-            "amount": [],
+            f"product title -- {self.country} sales --": [],
+            "quantity": [],
             "unit price": [],
             "unit price (w/o BTW)": [],
             "turnover": [],
@@ -45,9 +45,10 @@ class CountryOrders:
 
             amount, average_price, average_vatless, order_total, total_vatless = product.get_report()
 
-            dictionary["product number"].append(product_id)
-            dictionary["product title"].append(product.get_title())
-            dictionary["amount"].append(amount)
+            #add ' to force it to be a string
+            dictionary["product number"].append(str(product_id))
+            dictionary[f"product title -- {self.country} sales --"].append(product.get_title())
+            dictionary["quantity"].append(amount)
             dictionary["unit price"].append(average_price)
             dictionary["unit price (w/o BTW)"].append(average_vatless)
             dictionary["turnover"].append(order_total)

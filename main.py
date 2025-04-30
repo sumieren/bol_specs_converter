@@ -102,10 +102,16 @@ def to_excel(nl_data, be_data, file_name):
     nl_sheet = workbook["NL"] 
     be_sheet = workbook["BE"]
 
+    from openpyxl.styles import numbers
+
     # for all except the title, the column name is the longest string, so loop over them and set width to column name length
     for letter in ['A', 'C', 'D', 'E', 'F', 'G']:
         nl_sheet.column_dimensions[letter].width = len(nl_sheet[f"{letter}1"].value) + 5
         be_sheet.column_dimensions[letter].width = len(be_sheet[f"{letter}1"].value) + 5
+
+        if letter == "F":
+            nl_sheet.column_dimensions[letter].width = len("Total NL (w/o BTW)")
+            be_sheet.column_dimensions[letter].width = len("Total BE (w/o BTW)")
 
     # then, set the width of the title row, B
     max_width = 0
@@ -123,6 +129,12 @@ def to_excel(nl_data, be_data, file_name):
             if len(cell_value) > max_width:
                 max_width = len(cell_value)
     be_sheet.column_dimensions["B"].width = max_width + 5
+
+    # Format product ID columns as text
+    for sheet in [nl_sheet, be_sheet]:
+        for row in range(2, sheet.max_row + 1):  # Skip header row
+            cell = sheet['A' + str(row)] 
+            cell.number_format = '@'  # '@' is Excel's text format
 
     workbook.save(export_path)
 
