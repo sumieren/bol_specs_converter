@@ -38,10 +38,15 @@ class Product:
         average_price = round(sum(prices) / len(prices), 2)
         average_vatless = round(sum(prices_no_vat) / len(prices_no_vat), 2)
 
-        return [amount, average_price, average_vatless, order_total]
+        total_vatless = order_total / 1.21
+
+        return amount, average_price, average_vatless, order_total, total_vatless
 
     def get_product_id(self):
         return self.product_id
+    
+    def get_title(self):
+        return self.title
     
     def get_total(self):
         sum = 0

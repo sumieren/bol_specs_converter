@@ -28,3 +28,32 @@ class CountryOrders:
         print(self.products[product_id].get_orders())
 
 
+    # goal is a dictionary of lists
+    def as_dataframe(self):
+        dictionary = {
+            "product number": [],
+            "product title": [],
+            "amount": [],
+            "unit price": [],
+            "unit price (w/o BTW)": [],
+            "turnover": [],
+            "turnover (w/o BTW)": []
+        }
+
+        for product_id in self.products:  
+            product = self.products[product_id]
+
+            amount, average_price, average_vatless, order_total, total_vatless = product.get_report()
+
+            dictionary["product number"].append(product_id)
+            dictionary["product title"].append(product.get_title())
+            dictionary["amount"].append(amount)
+            dictionary["unit price"].append(average_price)
+            dictionary["unit price (w/o BTW)"].append(average_vatless)
+            dictionary["turnover"].append(order_total)
+            dictionary["turnover (w/o BTW)"].append(total_vatless)
+
+        return dictionary
+
+
+

@@ -1,4 +1,5 @@
 import csv, sys
+import pandas
 from product import Product
 from countryorders import CountryOrders
 
@@ -11,6 +12,7 @@ def main():
         raise Exception("too many arguments provided")
 
     data = None
+    file_name = sys.argv[1].split(".")[0].split("/")[1]
 
     # import the csv
     try:
@@ -37,10 +39,12 @@ def main():
 
     convert_data(data, nl_orders, be_orders)
 
-    #be_orders.get_orders(8718101100902)
+    print(file_name)
 
-    nl_orders.report()
-    be_orders.report()
+    #nl_orders.report()
+    #be_orders.report()
+
+    to_excel(nl_orders, be_orders, file_name)
 
 # takes the raw data from the CSV and turns it into something useful.. and readable 
 # data structure = dictionary with product id as key. Inside is the title and a list of orders
@@ -69,7 +73,27 @@ def convert_data(data, nl_data, be_data):
                 raise Exception("no valid country in provided row")
 
 
+def to_excel(nl_data, be_data, file_name):
+    export_path = f"output/{file_name}.xlsx"
 
+    nl_dataframe = pandas.DataFrame(nl_data.as_dataframe())
+    be_dataframe = pandas.DataFrame(be_data.as_dataframe())
 
+    #add totals to the bottom of each
+    nl_dataframe.loc[len(nl_dataframe)] = ["", "", "", "", "", "Total NL (w/o BTW)", nl_data.get_country_total() / 1.21]
+    nl_dataframe.loc[len(nl_dataframe)] = ["", "", "", "", "", "Total NL", nl_data.get_country_total()]
+    nl_dataframe.loc[len(nl_dataframe)] = ["", "", "", "", "", "Total NL+BE", nl_data.get_country_total() + be_data.get_country_total()]
+
+    be_dataframe.loc[len(be_dataframe)] = ["", "", "", "", "", "Total BE (w/o BTW)", be_data.get_country_total() / 1.21]
+    be_dataframe.loc[len(be_dataframe)] = ["", "", "", "", "", "Total BE ", be_data.get_country_total()]
+    be_dataframe.loc[len(be_dataframe)] = ["", "", "", "", "", "Total NL+BE", nl_data.get_country_total() + be_data.get_country_total()]
+
+    print(f"Converting data into {export_path}..")
+
+    with pandas.ExcelWriter(export_path, engine="openpyxl") as writer:
+        nl_dataframe.to_excel(writer, sheet_name='NL', index=False)
+        be_dataframe.to_excel(writer, sheet_name='BE', index=False)
+
+    print("Done!")
 
 main()
