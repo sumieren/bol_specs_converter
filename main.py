@@ -1,5 +1,6 @@
 import csv, sys
 import pandas
+from openpyxl import load_workbook
 from product import Product
 from countryorders import CountryOrders
 
@@ -80,11 +81,11 @@ def to_excel(nl_data, be_data, file_name):
     be_dataframe = pandas.DataFrame(be_data.as_dataframe())
 
     #add totals to the bottom of each
-    nl_dataframe.loc[len(nl_dataframe)] = ["", "", "", "", "", "Total NL (w/o BTW)", nl_data.get_country_total() / 1.21]
+    nl_dataframe.loc[len(nl_dataframe)] = ["", "", "", "", "", "Total NL (w/o BTW)", round(nl_data.get_country_total() / 1.21, 2)]
     nl_dataframe.loc[len(nl_dataframe)] = ["", "", "", "", "", "Total NL", nl_data.get_country_total()]
     nl_dataframe.loc[len(nl_dataframe)] = ["", "", "", "", "", "Total NL+BE", nl_data.get_country_total() + be_data.get_country_total()]
 
-    be_dataframe.loc[len(be_dataframe)] = ["", "", "", "", "", "Total BE (w/o BTW)", be_data.get_country_total() / 1.21]
+    be_dataframe.loc[len(be_dataframe)] = ["", "", "", "", "", "Total BE (w/o BTW)", round(be_data.get_country_total() / 1.21, 2)]
     be_dataframe.loc[len(be_dataframe)] = ["", "", "", "", "", "Total BE ", be_data.get_country_total()]
     be_dataframe.loc[len(be_dataframe)] = ["", "", "", "", "", "Total NL+BE", nl_data.get_country_total() + be_data.get_country_total()]
 
@@ -93,6 +94,37 @@ def to_excel(nl_data, be_data, file_name):
     with pandas.ExcelWriter(export_path, engine="openpyxl") as writer:
         nl_dataframe.to_excel(writer, sheet_name='NL', index=False)
         be_dataframe.to_excel(writer, sheet_name='BE', index=False)
+
+    print("adjusting column widths..")
+
+    # load into the generated file, get both sheets
+    workbook  = load_workbook(export_path)   
+    nl_sheet = workbook["NL"] 
+    be_sheet = workbook["BE"]
+
+    # for all except the title, the column name is the longest string, so loop over them and set width to column name length
+    for letter in ['A', 'C', 'D', 'E', 'F', 'G']:
+        nl_sheet.column_dimensions[letter].width = len(nl_sheet[f"{letter}1"].value) + 5
+        be_sheet.column_dimensions[letter].width = len(be_sheet[f"{letter}1"].value) + 5
+
+    # then, set the width of the title row, B
+    max_width = 0
+    for row_number in range(1, nl_sheet.max_row + 1):
+        cell_value = nl_sheet[f"B{row_number}"].value
+        if cell_value is not None:
+            if len(cell_value) > max_width:
+                max_width = len(cell_value)
+    nl_sheet.column_dimensions["B"].width = max_width + 5
+
+    max_width = 0
+    for row_number in range(1, be_sheet.max_row + 1):
+        cell_value = be_sheet[f"B{row_number}"].value
+        if cell_value is not None:
+            if len(cell_value) > max_width:
+                max_width = len(cell_value)
+    be_sheet.column_dimensions["B"].width = max_width + 5
+
+    workbook.save(export_path)
 
     print("Done!")
 

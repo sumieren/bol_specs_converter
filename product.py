@@ -38,7 +38,7 @@ class Product:
         average_price = round(sum(prices) / len(prices), 2)
         average_vatless = round(sum(prices_no_vat) / len(prices_no_vat), 2)
 
-        total_vatless = order_total / 1.21
+        total_vatless = round(order_total / 1.21, 2)
 
         return amount, average_price, average_vatless, order_total, total_vatless
 
