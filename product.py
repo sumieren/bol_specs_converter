@@ -7,12 +7,16 @@ class Product:
         self.orders = []
 
     # order format = [amount, unit_price, price_no_vat, order_total]
-    def add_order(self, unit_price, amount):
-        price_no_vat = round(unit_price / vat, 2)
-        order_total = amount * unit_price
+    def add_order(self, total_price, amount):
+        unit_price = round(total_price / amount, 2)
+        price_no_vat = round((total_price / vat) / amount, 2)
+        order_total = round(total_price, 2)
+
+        # if both are negative, it is a return. preserve the -
+        if total_price < 0 and amount < 0:
+            unit_price *= -1
 
         self.orders.append([amount, unit_price, price_no_vat, order_total])
-        print(f"added order")
 
     def get_orders(self):
         return self.orders
@@ -38,3 +42,11 @@ class Product:
 
     def get_product_id(self):
         return self.product_id
+    
+    def get_total(self):
+        sum = 0
+
+        for order in self.orders:
+            sum += order[3]
+
+        return round(sum, 2)

@@ -37,7 +37,10 @@ def main():
 
     convert_data(data, nl_orders, be_orders)
 
+    #be_orders.get_orders(8718101100902)
+
     nl_orders.report()
+    be_orders.report()
 
 # takes the raw data from the CSV and turns it into something useful.. and readable 
 # data structure = dictionary with product id as key. Inside is the title and a list of orders
@@ -49,15 +52,19 @@ def convert_data(data, nl_data, be_data):
         if row[0] in useful_types:
             product_id = int(row[2])
             title = row[3]
-            unit_price = float(row[12])
+            total_price = -float(row[12])
             amount = int(row[6])
 
             country = row[13]
 
+            # if its a return, set amount to negative
+            if row[0] == "Correctie verkoopprijs artikel(en)":
+                amount *= -1
+
             if country == "NL":
-                nl_data.add_order(product_id, title, unit_price, amount)
+                nl_data.add_order(product_id, title, total_price, amount)
             elif country == "BE":
-                be_data.add_order(product_id, title, unit_price, amount)
+                be_data.add_order(product_id, title, total_price, amount)
             else:
                 raise Exception("no valid country in provided row")
 

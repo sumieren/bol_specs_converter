@@ -12,7 +12,19 @@ class CountryOrders:
         self.products[product_id].add_order(unit_price, amount)
 
     def report(self):
+        print(f"{self.country} total: {self.get_country_total()}")
         for product_id in self.products:
             print(f"{product_id} totals: {self.products[product_id].get_report()}")
+
+    def get_country_total(self):
+        sum = 0
+
+        for product_id in self.products:
+            sum += self.products[product_id].get_total()
+
+        return round(sum, 2)
+    
+    def get_orders(self, product_id):
+        print(self.products[product_id].get_orders())
 
 
