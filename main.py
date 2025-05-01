@@ -1,6 +1,6 @@
 import csv, sys
-import pandas
-from openpyxl import load_workbook
+import pandas # type: ignore
+from openpyxl import load_workbook # type: ignore
 from product import Product
 from countryorders import CountryOrders
 
@@ -102,7 +102,7 @@ def to_excel(nl_data, be_data, file_name):
     nl_sheet = workbook["NL"] 
     be_sheet = workbook["BE"]
 
-    from openpyxl.styles import numbers
+    from openpyxl.styles import numbers # type: ignore
 
     # for all except the title, the column name is the longest string, so loop over them and set width to column name length
     for letter in ['A', 'C', 'D', 'E', 'F', 'G']:
