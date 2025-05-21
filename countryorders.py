@@ -29,10 +29,10 @@ class CountryOrders:
 
 
     # goal is a dictionary of lists
-    def as_dataframe(self):
+    def as_dataframe(self, date):
         dictionary = {
             "product number": [],
-            f"product title -- {self.country} sales --": [],
+            f"product title -- {self.country} sales {date} --": [],
             "quantity": [],
             "unit price": [],
             "unit price (w/o BTW)": [],
@@ -47,7 +47,7 @@ class CountryOrders:
 
             #add ' to force it to be a string
             dictionary["product number"].append(str(product_id))
-            dictionary[f"product title -- {self.country} sales --"].append(product.get_title())
+            dictionary[f"product title -- {self.country} sales {date} --"].append(product.get_title())
             dictionary["quantity"].append(amount)
             dictionary["unit price"].append(average_price)
             dictionary["unit price (w/o BTW)"].append(average_vatless)

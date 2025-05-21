@@ -77,8 +77,8 @@ def convert_data(data, nl_data, be_data):
 def to_excel(nl_data, be_data, file_name):
     export_path = f"output/{file_name}.xlsx"
 
-    nl_dataframe = pandas.DataFrame(nl_data.as_dataframe())
-    be_dataframe = pandas.DataFrame(be_data.as_dataframe())
+    nl_dataframe = pandas.DataFrame(nl_data.as_dataframe(file_name))
+    be_dataframe = pandas.DataFrame(be_data.as_dataframe(file_name))
 
     #add totals to the bottom of each
     nl_dataframe.loc[len(nl_dataframe)] = ["", "", "", "", "", "Total NL (w/o BTW)", round(nl_data.get_country_total() / 1.21, 2)]
