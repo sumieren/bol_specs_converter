@@ -86,7 +86,7 @@ def to_excel(nl_data, be_data, file_name):
     nl_dataframe.loc[len(nl_dataframe)] = ["", "", "", "", "", "Total NL+BE", nl_data.get_country_total() + be_data.get_country_total()]
 
     be_dataframe.loc[len(be_dataframe)] = ["", "", "", "", "", "Total BE (w/o BTW)", round(be_data.get_country_total() / 1.21, 2)]
-    be_dataframe.loc[len(be_dataframe)] = ["", "", "", "", "", "Total BE ", be_data.get_country_total()]
+    be_dataframe.loc[len(be_dataframe)] = ["", "", "", "", "", "Total BE", be_data.get_country_total()]
     be_dataframe.loc[len(be_dataframe)] = ["", "", "", "", "", "Total NL+BE", nl_data.get_country_total() + be_data.get_country_total()]
 
     print(f"Converting data into {export_path}..")
@@ -102,33 +102,36 @@ def to_excel(nl_data, be_data, file_name):
     nl_sheet = workbook["NL"] 
     be_sheet = workbook["BE"]
 
+    for sheet in [nl_sheet, be_sheet]:
+        sheet.page_setup.orientation = sheet.ORIENTATION_LANDSCAPE
+        sheet.page_setup.paperSize = sheet.PAPERSIZE_A4
+
+        from openpyxl.worksheet.page import PageMargins
+        sheet.page_margins = PageMargins(left=0.17, right=0.17, top=0.17, bottom=0.17, header=0, footer=0)
+
     from openpyxl.styles import numbers # type: ignore
 
     # for all except the title, the column name is the longest string, so loop over them and set width to column name length
+    scale = 0.75
+    readable_names = False
     for letter in ['A', 'C', 'D', 'E', 'F', 'G']:
-        nl_sheet.column_dimensions[letter].width = len(nl_sheet[f"{letter}1"].value) + 5
-        be_sheet.column_dimensions[letter].width = len(be_sheet[f"{letter}1"].value) + 5
+        if letter == 'A':
+            scale = 1.1
+        else:
+            scale = 0.75
 
-        if letter == "F":
-            nl_sheet.column_dimensions[letter].width = len("Total NL (w/o BTW)")
-            be_sheet.column_dimensions[letter].width = len("Total BE (w/o BTW)")
+        if readable_names:
+            nl_sheet.column_dimensions[letter].width = len(nl_sheet[f"{letter}1"].value) * scale
+            be_sheet.column_dimensions[letter].width = len(be_sheet[f"{letter}1"].value) * scale
+        else:
+            ignore_n = 3 if letter in ['F', 'G'] else 0
+            nl_sheet.column_dimensions[letter].width = get_max_width(letter, nl_sheet, ignore_n) 
+            be_sheet.column_dimensions[letter].width = get_max_width(letter, be_sheet, ignore_n) 
 
     # then, set the width of the title row, B
-    max_width = 0
-    for row_number in range(1, nl_sheet.max_row + 1):
-        cell_value = nl_sheet[f"B{row_number}"].value
-        if cell_value is not None:
-            if len(cell_value) > max_width:
-                max_width = len(cell_value)
-    nl_sheet.column_dimensions["B"].width = max_width + 5
+    nl_sheet.column_dimensions["B"].width = get_max_width("B", nl_sheet) * scale
+    be_sheet.column_dimensions["B"].width = get_max_width("B", be_sheet) * scale
 
-    max_width = 0
-    for row_number in range(1, be_sheet.max_row + 1):
-        cell_value = be_sheet[f"B{row_number}"].value
-        if cell_value is not None:
-            if len(cell_value) > max_width:
-                max_width = len(cell_value)
-    be_sheet.column_dimensions["B"].width = max_width + 5
 
     # Format product ID columns as text
     for sheet in [nl_sheet, be_sheet]:
@@ -139,5 +142,21 @@ def to_excel(nl_data, be_data, file_name):
     workbook.save(export_path)
 
     print("Done!")
+
+def get_max_width(column, sheet, ignore_last_n = 0):
+    max_width = 0
+
+    # Start at the first non-header row
+    for row_number in range(2, sheet.max_row + 1 - ignore_last_n):
+        cell_value = sheet[f"{column}{row_number}"].value
+        if isinstance(cell_value, (float, int)):
+            cell_value = "{:.2f}".format(cell_value)
+
+        if cell_value is not None:
+            if len(cell_value) > max_width:
+                max_width = len(cell_value)
+
+    return max_width
+
 
 main()
